@@ -1,83 +1,98 @@
-const int SIZE	=128;
+const int SIZE = 128;
+
+template<typename K,typename V>
 class HashNode{
 public:
 
-	HashNode(unsigned int  key, int value) :
-		_key(key), _value(value), _next(0){};
+	HashNode(K  key, V value) :
+		_key(key), _value(value), _next(NULL){};
 
-	unsigned int getkey(){ return _key; }
-	int getvalue(){ return _value; }
+	K getkey(){ return _key; }
+
+	V getvalue(){ return _value; }
+
 	HashNode * getnext(){ return _next; };
 
-	void setnext(HashNode * a){  _next=a; }
-	void setkey(unsigned a){ _key = a; }
-	void setvalue(int a){ _value = a; }
+	void setnext(HashNode * a){ HashNode::_next = a; }
+
+	void setkey(K a){ _key = a; }
+
+	void setvalue(V a){ _value = a; }
 
 
 private:
-	unsigned int _key;
-	int       _value;
+	K _key;
+	V _value;
 	HashNode * _next;
 };
 
+template<typename K, typename V>
 class HashMap{
 public:
 	HashMap()
 	{
-		_table = new HashNode*  [SIZE];
+		_table = new HashNode<K,V>*[SIZE]();
 		for (int i = 0; i < SIZE; ++i)
 			_table[i] = 0;
 	}
 	~HashMap()
 	{
 		int i;
-		HashNode *entry;
-		HashNode *prv=0;
+		HashNode<K, V> *entry;
+		HashNode<K, V> *prv = 0;
 		for (i = 0; i < SIZE; i++)
 		{
 			entry = _table[i];
-			while (entry!= NULL)
+			while (entry != NULL)
 			{
 				prv = entry;
 				delete prv;
 				entry = entry->getnext();
 			}
 		}
-		delete _table;
+		delete []_table;
 	}
-	int getsitvalue(unsigned int a);
-	
-	void put(unsigned key, int value);
-	
-	int getNode(unsigned int key);
-	int deletenode(unsigned int key);
+
+
+	bool HashMap<K, V>::getNode(K key,V &value)
+	{
+		int sit = getsitvalue(key);
+		HashNode<K, V> * entry = _table[sit];
+
+		while (entry != NULL)
+		{
+			if (entry->getkey() == key)
+			{
+				value=entry->getvalue();
+				return 1;
+			}
+			entry = entry->getnext();
+
+		}
+		return -1;
+
+	}
+
+	int HashMap<K,V>::getsitvalue(K a);
+
+	void  HashMap<K, V>::put(K key, V value);
+
+	int  HashMap<K, V>::deletenode(K key);
 
 private:
-	HashNode ** _table;
+	HashNode<K,V> ** _table;
 };
 
-int HashMap::getNode(unsigned int key)
+
+template<typename K, typename V>
+int HashMap<K, V>::deletenode(K key)
 {
 	int sit = getsitvalue(key);
-	HashNode * entry = _table[sit];
-
-	while (entry != NULL)
-	{
-		if (entry->getkey() == key) return entry->getvalue();
-		entry = entry->getnext();
-
-	}
-	return -1;
-	
-}
-int HashMap::deletenode(unsigned int key)
-{
-	int sit = getsitvalue(key);
-	HashNode * entry;
-	HashNode *prv=NULL;
+	HashNode<K, V> * entry;
+	HashNode<K, V> *prv = NULL;
 	entry = _table[sit];
 
-	while (entry != NULL&&(entry->getkey() )!= key)
+	while (entry != NULL && (entry->getkey()) != key)
 	{
 		prv = entry;
 		entry = entry->getnext();
@@ -91,20 +106,24 @@ int HashMap::deletenode(unsigned int key)
 		else
 			prv->setnext(entry->getnext());
 
-
 		delete entry;
 	}
-	
+	return 1;
+
 }
-int HashMap::getsitvalue(unsigned int a)
+
+template<typename K, typename V>
+int HashMap<K, V>::getsitvalue(K a)
 {
 	return a%SIZE;
 }
-void HashMap::put(unsigned int  key, int value)
+
+template<typename K, typename V>
+void HashMap<K, V>::put(K  key, V value)
 {
 	int sit = getsitvalue(key);
-	HashNode *prv = 0;
-	HashNode *entry;
+	HashNode<K, V> *prv = 0;
+	HashNode<K, V> *entry;
 	entry = _table[sit];
 	while (entry != NULL&&entry->getkey() != key)
 	{
@@ -113,13 +132,13 @@ void HashMap::put(unsigned int  key, int value)
 	}
 	if (entry == 0)
 	{
-		entry = new HashNode(key,value);
+		entry = new HashNode<K, V>(key, value);
 		if (prv == 0)
 			_table[sit] = entry;
 		else
 			prv->setnext(entry);
 	}
 	else
-		prv->setnext(new HashNode(key, value));
+		entry->setvalue(value);
 
 }
